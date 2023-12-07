@@ -1,0 +1,4 @@
+My project is a pizza ordering system, in which you can choose from a variety of pizza, and order it straight to your front door. 
+So far I have all of the main layout coded aswell as most of the buttons and different places to input text. 
+My major problem I have been facing is getting everything to fit all on one screen without it getting cut off. 
+My next step is to finish up the coding and make it look aesthetically pleasing.
