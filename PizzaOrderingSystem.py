@@ -157,12 +157,20 @@ class PaymentWindow(tk.Toplevel, ThemedMixin):
         self.cvv_entry.pack(pady=5)
 
         ttk.Button(self, text="Place Order", command=lambda: self.show_confirmation_window(cart)).pack(pady=10)
+        
+        # Go Back button
+        ttk.Button(self, text="Go Back", command=self.go_back).pack(pady=10)
 
     def show_confirmation_window(self, cart):
-    # Placeholder for opening the confirmation window
-     confirmation_window = ConfirmationWindow(self.master, self.card_entry.get(), self.expiry_entry.get(), self.cvv_entry.get(), cart)
-     confirmation_window.protocol("WM_DELETE_WINDOW", lambda: self.on_confirmation_window_close(confirmation_window))
-     confirmation_window.grab_set()
+        # Placeholder for opening the confirmation window
+        confirmation_window = ConfirmationWindow(self.master, self.card_entry.get(), self.expiry_entry.get(), self.cvv_entry.get(), cart)
+        confirmation_window.protocol("WM_DELETE_WINDOW", lambda: self.on_confirmation_window_close(confirmation_window))
+        confirmation_window.grab_set()
+
+    def go_back(self):
+        # Close the current payment window and show the home page window
+        self.destroy()
+        self.master.deiconify()
 
 def on_confirmation_window_close(self, confirmation_window):
     self.destroy()
