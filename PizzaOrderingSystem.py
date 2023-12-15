@@ -1,10 +1,14 @@
 import tkinter as tk
-from tkinter import messagebox
+from tkinter import ttk, messagebox
 
 class MainApplication:
     def __init__(self, root):
         self.root = root
         self.root.title("Online Food Ordering System")
+
+        # Modern Theme
+        self.style = ttk.Style()
+        self.style.theme_use("clam")
 
         # Menu Bar
         menubar = tk.Menu(root)
@@ -22,22 +26,30 @@ class MainApplication:
     def show_login_window(self):
         self.login_window.show()
 
-class LoginWindow:
+class ThemedMixin:
     def __init__(self, master):
         self.master = master
+        self.style = ttk.Style()
+
+class LoginWindow(ThemedMixin):
+    def __init__(self, master):
+        super().__init__(master)
         self.master.title("Login")
         self.master.geometry("300x200")
 
         # Login components (labels, entry, button)
-        tk.Label(self.master, text="Username:").pack(pady=10)
-        self.username_entry = tk.Entry(self.master)
-        self.username_entry.pack(pady=5)
+        self.frame = ttk.Frame(self.master)
+        self.frame.pack(pady=20)
 
-        tk.Label(self.master, text="Password:").pack(pady=10)
-        self.password_entry = tk.Entry(self.master, show="*")
-        self.password_entry.pack(pady=5)
+        ttk.Label(self.frame, text="Username:").grid(row=0, column=0, pady=10, padx=10, sticky="e")
+        self.username_entry = ttk.Entry(self.frame)
+        self.username_entry.grid(row=0, column=1, pady=5, padx=10)
 
-        tk.Button(self.master, text="Login", command=self.login).pack(pady=10)
+        ttk.Label(self.frame, text="Password:").grid(row=1, column=0, pady=10, padx=10, sticky="e")
+        self.password_entry = ttk.Entry(self.frame, show="*")
+        self.password_entry.grid(row=1, column=1, pady=5, padx=10)
+
+        ttk.Button(self.master, text="Login", command=self.login).pack(pady=10)
 
     def login(self):
         # Placeholder for login logic
@@ -46,7 +58,7 @@ class LoginWindow:
 
         # Replace this with your actual login validation logic
         if username == "user" and password == "pass":
-            messagebox.showinfo("Login Successful", "Welcome, {}".format(username))
+            messagebox.showinfo("Login Successful", f"Welcome, {username}!")
             # Placeholder for opening the home page window
             self.master.withdraw()
             home_window = HomePageWindow(self.master)
@@ -57,130 +69,150 @@ class LoginWindow:
     def show(self):
         self.master.deiconify()
 
-class HomePageWindow:
+class HomePageWindow(ThemedMixin):
     def __init__(self, master):
-        self.master = master
+        super().__init__(master)
         self.master.title("Home Page")
         self.master.geometry("600x400")
 
         # Placeholder for home page components (menu, cart, etc.)
-        tk.Label(self.master, text="Welcome to the Home Page").pack(pady=20)
+        ttk.Label(self.master, text="Welcome to the Home Page").pack(pady=20)
+
+        self.menu_frame = ttk.Frame(self.master)
+        self.menu_frame.pack(pady=10)
 
         # Placeholder for menu items
         menu_items = [
-            {"name": "Item 1", "price": 10.99},
-            {"name": "Item 2", "price": 5.99},
-            {"name": "Item 3", "price": 8.49},
+            {"name": "Deluxe Pizza", "price": 10.99},
+            {"name": "Cheese Pizza", "price": 5.99},
+            {"name": "Pepperoni Pizza", "price": 8.49},
         ]
 
         # Display menu items
         for item in menu_items:
-            tk.Label(self.master, text=f"{item['name']}: ${item['price']:.2f}").pack()
+            ttk.Label(self.menu_frame, text=f"{item['name']}: ${item['price']:.2f}").pack()
+
+        self.cart_frame = ttk.Frame(self.master)
+        self.cart_frame.pack(pady=10)
 
         # Cart components
         self.cart = []  # List to store selected items
 
+        # Listbox to display cart items
+        self.cart_listbox = tk.Listbox(self.cart_frame)
+        self.cart_listbox.pack()
+
         def add_to_cart(item):
             self.cart.append(item)
+            self.cart_listbox.insert(tk.END, f"{item['name']} - ${item['price']:.2f}")
             messagebox.showinfo("Cart", f"{item['name']} added to cart!")
 
         # Add buttons for each menu item to add to the cart
         for item in menu_items:
-            add_button = tk.Button(self.master, text=f"Add to Cart ({item['name']})", command=lambda i=item: add_to_cart(i))
-            add_button.pack(pady=5)
-
-        # Display cart
-        tk.Label(self.master, text="Cart:").pack()
-        for cart_item in self.cart:
-            tk.Label(self.master, text=f"{cart_item['name']}").pack()
+            ttk.Button(self.menu_frame, text=f"Add to Cart ({item['name']})", command=lambda i=item: add_to_cart(i)).pack(pady=5)
 
         # Clear cart button
-        tk.Button(self.master, text="Clear Cart", command=self.clear_cart).pack(pady=10)
+        ttk.Button(self.cart_frame, text="Clear Cart", command=self.clear_cart).pack(pady=10)
 
         # Proceed to Payment button
-        tk.Button(self.master, text="Proceed to Payment", command=self.show_payment_window).pack(pady=10)
+        ttk.Button(self.cart_frame, text="Proceed to Payment", command=self.show_payment_window).pack(pady=10)
 
     def clear_cart(self):
         self.cart.clear()
+        self.cart_listbox.delete(0, tk.END)  # Clear the Listbox
         messagebox.showinfo("Cart Cleared", "Your cart has been cleared!")
 
     def show_payment_window(self):
         # Placeholder for opening the payment window
-        self.master.withdraw()
-        payment_window = PaymentWindow(self.master, self.cart)
-        payment_window.show()
+        PaymentWindow(self.master, self.cart)
 
     def show(self):
         self.master.deiconify()
 
-class PaymentWindow:
+class PaymentWindow(tk.Toplevel, ThemedMixin):
     def __init__(self, master, cart):
-        self.master = master
-        self.master.title("Payment")
-        self.master.geometry("400x300")
+        super().__init__(master)
+        self.title("Payment")
+        self.geometry("400x300")
 
         # Placeholder for payment components (payment form, etc.)
-        tk.Label(self.master, text="Enter Payment Information").pack(pady=20)
+        ttk.Label(self, text="Enter Payment Information").pack(pady=20)
 
         # Display cart items
-        tk.Label(self.master, text="Cart:").pack()
+        ttk.Label(self, text="Cart:").pack()
         for cart_item in cart:
-            tk.Label(self.master, text=f"{cart_item['name']}").pack()
+            ttk.Label(self, text=f"{cart_item['name']}").pack()
 
         # Payment form components
-        tk.Label(self.master, text="Card Number:").pack(pady=5)
-        self.card_entry = tk.Entry(self.master)
+        ttk.Label(self, text="Card Number:").pack(pady=5)
+        self.card_entry = ttk.Entry(self)
         self.card_entry.pack(pady=5)
 
-        tk.Label(self.master, text="Expiry Date:").pack(pady=5)
-        self.expiry_entry = tk.Entry(self.master)
+        ttk.Label(self, text="Expiry Date:").pack(pady=5)
+        self.expiry_entry = ttk.Entry(self)
         self.expiry_entry.pack(pady=5)
 
-        tk.Label(self.master, text="CVV:").pack(pady=5)
-        self.cvv_entry = tk.Entry(self.master, show="*")
+        ttk.Label(self, text="CVV:").pack(pady=5)
+        self.cvv_entry = ttk.Entry(self, show="*")
         self.cvv_entry.pack(pady=5)
 
-        tk.Button(self.master, text="Place Order", command=lambda: self.show_confirmation_window(cart)).pack(pady=10)
+        ttk.Button(self, text="Place Order", command=lambda: self.show_confirmation_window(cart)).pack(pady=10)
 
     def show_confirmation_window(self, cart):
-        # Placeholder for opening the confirmation window
-        self.master.withdraw()
-        confirmation_window = ConfirmationWindow(self.master, self.card_entry.get(), self.expiry_entry.get(), self.cvv_entry.get(), cart)
-        confirmation_window.show()
+    # Placeholder for opening the confirmation window
+     confirmation_window = ConfirmationWindow(self.master, self.card_entry.get(), self.expiry_entry.get(), self.cvv_entry.get(), cart)
+     confirmation_window.protocol("WM_DELETE_WINDOW", lambda: self.on_confirmation_window_close(confirmation_window))
+     confirmation_window.grab_set()
 
-    def show(self):
-        self.master.deiconify()
+def on_confirmation_window_close(self, confirmation_window):
+    self.destroy()
+    confirmation_window.destroy()
 
-class ConfirmationWindow:
+
+class ConfirmationWindow(tk.Toplevel, ThemedMixin):
     def __init__(self, master, card_number, expiry_date, cvv, cart):
-        self.master = master
-        self.master.title("Order Confirmation")
-        self.master.geometry("500x400")
+        super().__init__(master)
+        self.title("Order Confirmation")
+        self.geometry("500x400")
 
         # Placeholder for confirmation components (order summary, etc.)
-        tk.Label(self.master, text="Order Summary").pack(pady=20)
+        ttk.Label(self, text="Order Summary").pack(pady=20)
 
         # Display payment information
-        tk.Label(self.master, text=f"Card Number: {card_number}").pack()
-        tk.Label(self.master, text=f"Expiry Date: {expiry_date}").pack()
-        tk.Label(self.master, text=f"CVV: {cvv}").pack()
+        ttk.Label(self, text=f"Card Number: {card_number}").pack()
+        ttk.Label(self, text=f"Expiry Date: {expiry_date}").pack()
+        ttk.Label(self, text=f"CVV: {cvv}").pack()
 
         # Display order summary
-        tk.Label(self.master, text="Items Purchased:").pack()
+        ttk.Label(self, text="Items Purchased:").pack()
         for cart_item in cart:
-            tk.Label(self.master, text=f"{cart_item['name']}").pack()
+            ttk.Label(self, text=f"{cart_item['name']}").pack()
 
-        tk.Button(self.master, text="Finish", command=self.finish_order).pack(pady=10)
+        ttk.Button(self, text="Finish", command=self.finish_order).pack(pady=10)
 
     def finish_order(self):
-        # Placeholder for order completion logic
+    # Placeholder for order completion logic
         messagebox.showinfo("Order Placed", "Thank you for your order!")
         self.master.destroy()
-
-    def show(self):
-        self.master.deiconify()
+        self.destroy()
 
 if __name__ == "__main__":
     root = tk.Tk()
     app = MainApplication(root)
+
+    # Load and add images
+    try:
+        pizza_image = tk.PhotoImage(file=r"C:\Users\Nikoli\Desktop\Final Pizza\pizza_image.png")
+        logo_image = tk.PhotoImage(file=r"C:\Users\Nikoli\Desktop\Final Pizza\logo_image.png")
+    except tk.TclError as e:
+        print(f"Error loading images: {e}")
+
+    if 'pizza_image' in locals() and pizza_image:
+        ttk.Label(root, image=pizza_image).pack(pady=10)
+    if 'logo_image' in locals() and logo_image:
+        ttk.Label(root, image=logo_image).pack(pady=10)
+
     root.mainloop()
+
+
+
